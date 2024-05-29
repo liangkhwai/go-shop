@@ -23,7 +23,6 @@ func (s *server) playerService() {
 		grpcServer.Serve(lis)
 
 	}()
-	_ = httpHandler
 	_ = grpcHandler
 	_ = queueHandler
 
@@ -33,4 +32,5 @@ func (s *server) playerService() {
 
 	player.GET("", s.healthCheckService)
 
+	player.POST("/player/register", httpHandler.CreatePlayer)
 }
