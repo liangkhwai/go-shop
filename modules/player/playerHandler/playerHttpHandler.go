@@ -17,6 +17,7 @@ type (
 	PlayerHttpHandlerService interface {
 		CreatePlayer(c echo.Context) error
 		FindOnePlayerProfile(c echo.Context) error
+		AddPlayerMoney(c echo.Context) error
 	}
 
 	playerHttpHandler struct {
@@ -59,5 +60,24 @@ func (h *playerHttpHandler) FindOnePlayerProfile(c echo.Context) error {
 	}
 
 	return response.SuccessResponse(c, http.StatusOK, res)
+
+}
+
+func (h *playerHttpHandler) AddPlayerMoney(c echo.Context) error {
+	ctx := context.Background()
+	warpper := request.ContextWrapper(c)
+
+	req := new(player.CreatePlayerTransectionReq)
+
+	if err := warpper.Bind(req); err != nil {
+		return response.ErrResponse(c, http.StatusBadRequest, err.Error())
+	}
+
+
+	if err := h.playerUsecase.AddPlayerMoney(ctx, req); err != nil {
+		return response.ErrResponse(c, http.StatusBadRequest, err.Error())
+	}
+
+	return response.SuccessResponse(c, http.StatusCreated, map[string]any{"message": "success"})
 
 }

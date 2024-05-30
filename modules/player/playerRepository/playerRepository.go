@@ -19,6 +19,7 @@ type (
 		IsUniquePlayer(pctx context.Context, email, username string) bool
 		InsertOnePlayer(pctx context.Context, req *player.Player) (primitive.ObjectID, error)
 		FindOnePlayerProfile (pctx context.Context, playerId string) (*player.PlayerProfileBson, error)
+		InsertOnePlayerTransaction(pctx context.Context, req *player.PlayerTransaction) error
 	}
 
 	playerRepository struct {
@@ -104,4 +105,24 @@ func (r *playerRepository) FindOnePlayerProfile (pctx context.Context, playerId 
 	}
 
 	return result, nil
+}
+
+
+func (r *playerRepository) InsertOnePlayerTransaction(pctx context.Context, req *player.PlayerTransaction) error {
+	ctx, cancel := context.WithTimeout(pctx, 10*time.Second)
+	defer cancel()
+
+	db := r.playerDbConn(ctx)
+
+	col := db.Collection("player_transactions")
+
+	result,err := col.InsertOne(ctx, req)
+	if err != nil {
+		log.Printf("Error: InsertOnePlayerTransaction: %s", err.Error())
+		return  errors.New("error: insert one player transaction failed")
+
+	}
+	log.Printf("Result: InsertOnePlayerTransaction: %s", result.InsertedID)
+
+	return  nil
 }
