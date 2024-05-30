@@ -18,8 +18,9 @@ type (
 	PlayerRepositoryService interface {
 		IsUniquePlayer(pctx context.Context, email, username string) bool
 		InsertOnePlayer(pctx context.Context, req *player.Player) (primitive.ObjectID, error)
-		FindOnePlayerProfile (pctx context.Context, playerId string) (*player.PlayerProfileBson, error)
+		FindOnePlayerProfile(pctx context.Context, playerId string) (*player.PlayerProfileBson, error)
 		InsertOnePlayerTransaction(pctx context.Context, req *player.PlayerTransaction) error
+		GetPlayerSavingAccount(pctx context.Context, playerId string) (*player.PlayerSavingAccount, error)
 	}
 
 	playerRepository struct {
@@ -78,8 +79,7 @@ func (r *playerRepository) InsertOnePlayer(pctx context.Context, req *player.Pla
 	return playerId.InsertedID.(primitive.ObjectID), nil
 }
 
-
-func (r *playerRepository) FindOnePlayerProfile (pctx context.Context, playerId string) (*player.PlayerProfileBson, error){
+func (r *playerRepository) FindOnePlayerProfile(pctx context.Context, playerId string) (*player.PlayerProfileBson, error) {
 	ctx, cancel := context.WithTimeout(pctx, 10*time.Second)
 	defer cancel()
 
@@ -92,21 +92,20 @@ func (r *playerRepository) FindOnePlayerProfile (pctx context.Context, playerId 
 		ctx,
 		bson.M{"_id": utils.ConvertToObjectId(playerId)},
 		options.FindOne().SetProjection(bson.M{
-			"_id": 1,
-			"email":1,
-			"username":1,
-			"created_at":1,
-			"updated_at":1,
+			"_id":        1,
+			"email":      1,
+			"username":   1,
+			"created_at": 1,
+			"updated_at": 1,
 		},
-	),
-	).Decode(result); err != nil{
+		),
+	).Decode(result); err != nil {
 		log.Printf("Error: FindOnePlayerProfile: %s", err.Error())
 		return nil, errors.New("error: player profile not found")
 	}
 
 	return result, nil
 }
-
 
 func (r *playerRepository) InsertOnePlayerTransaction(pctx context.Context, req *player.PlayerTransaction) error {
 	ctx, cancel := context.WithTimeout(pctx, 10*time.Second)
@@ -116,13 +115,59 @@ func (r *playerRepository) InsertOnePlayerTransaction(pctx context.Context, req 
 
 	col := db.Collection("player_transactions")
 
-	result,err := col.InsertOne(ctx, req)
+	result, err := col.InsertOne(ctx, req)
 	if err != nil {
 		log.Printf("Error: InsertOnePlayerTransaction: %s", err.Error())
-		return  errors.New("error: insert one player transaction failed")
+		return errors.New("error: insert one player transaction failed")
 
 	}
 	log.Printf("Result: InsertOnePlayerTransaction: %s", result.InsertedID)
 
-	return  nil
+	return nil
+}
+
+func (r *playerRepository) GetPlayerSavingAccount(pctx context.Context, playerId string) (*player.PlayerSavingAccount, error) {
+	ctx, cancle := context.WithTimeout(pctx, 10*time.Second)
+	defer cancle()
+
+	db := r.playerDbConn(ctx)
+	col := db.Collection("player_transactions")
+
+	filter := bson.A{
+		bson.D{{"$match", bson.D{{"player_id", playerId}}}},
+		bson.D{
+			{"$group",
+				bson.D{
+					{"_id", "$player_id"},
+					{"balance", bson.D{{"$sum", "$amount"}}},
+				},
+			},
+		},
+		bson.D{
+			{"$project",
+				bson.D{
+					{"player_id", "$_id"},
+					{"_id", 0},
+					{"balance", 1},
+				},
+			},
+		},
+	}
+
+	cursors, err := col.Aggregate(ctx, filter)
+	if err != nil {
+		log.Printf("Error: GetPlayerSavingAccount: %s", err.Error())
+		return nil, errors.New("error: faild to get player saving account")
+	}
+	result := new(player.PlayerSavingAccount)
+
+	for cursors.Next(ctx) {
+		if err := cursors.Decode(result); err != nil {
+			log.Printf("Error: GetPlayerSavingAccount: %s", err.Error())
+			return nil, errors.New("error: faild to decode player saving account")
+		}
+	}
+
+	return result, nil
+
 }

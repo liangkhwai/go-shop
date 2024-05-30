@@ -16,7 +16,8 @@ type (
 	PlayerUsecaseService interface {
 		CreatePlayer(pctx context.Context, req *player.CreatePlayerReq) (*player.PlayerProfile, error)
 		FindOnePlayerProfile(pctx context.Context, playerId string) (*player.PlayerProfile, error)
-		AddPlayerMoney(pctx context.Context, req *player.CreatePlayerTransectionReq) error
+		AddPlayerMoney(pctx context.Context, req *player.CreatePlayerTransectionReq) (*player.PlayerSavingAccount, error)
+		GetPlayerSavingAccount(pctx context.Context,playerId string) (*player.PlayerSavingAccount, error)
 	}
 
 	playerUsecase struct {
@@ -85,15 +86,19 @@ func (u *playerUsecase) FindOnePlayerProfile(pctx context.Context, playerId stri
 }
 
 
-func (u *playerUsecase) AddPlayerMoney(pctx context.Context, req *player.CreatePlayerTransectionReq) error {
+func (u *playerUsecase) AddPlayerMoney(pctx context.Context, req *player.CreatePlayerTransectionReq) (*player.PlayerSavingAccount, error) {
 	// Insert One Player Transaction
 	if err := u.playerRepository.InsertOnePlayerTransaction(pctx, &player.PlayerTransaction{
 		PlayerId: req.PlayerId,
 		Amount:   req.Amount,
 		CreatedAt: utils.LocalTime(),
 	}); err != nil {
-		return err
+		return nil,err
 	}
 	
-	return nil
+	return u.GetPlayerSavingAccount(pctx, req.PlayerId)
+}
+
+func( u *playerUsecase) GetPlayerSavingAccount(pctx context.Context,playerId string) (*player.PlayerSavingAccount, error){
+	return u.playerRepository.GetPlayerSavingAccount(pctx, playerId)
 }
