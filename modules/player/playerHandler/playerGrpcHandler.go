@@ -21,19 +21,16 @@ func NewPlayerGrpcHandler(playerUsecase playerUsecase.PlayerUsecaseService) *pla
 }
 
 func (g *playerGrpcHandler) CredentialSearch(ctx context.Context, req *playerPb.CredentialSearchReq) (*playerPb.PlayerProfile, error) {
-	
-
 
 	return g.playerUsecase.FindOnePlayerCredential(ctx, req.Password, req.Email)
 }
 
-
-func (g *playerGrpcHandler) FindOnePlayerProfileToRefresh(ctx context.Context,req *playerPb.FindOnePlayerProfileToRefreshReq) (*playerPb.PlayerProfile, error) {
+func (g *playerGrpcHandler) FindOnePlayerProfileToRefresh(ctx context.Context, req *playerPb.FindOnePlayerProfileToRefreshReq) (*playerPb.PlayerProfile, error) {
 	// your code here
-	return nil, nil
+	return g.playerUsecase.FindOnePlayerProfileToRefresh(ctx, req.PlayerId)
 
 }
-func (g *playerGrpcHandler) GetPlayerSavingAccount(ctx context.Context,req *playerPb.GetPlayerSavingAccountReq) (*playerPb.GetPlayerSavingAccountRes, error) {
+func (g *playerGrpcHandler) GetPlayerSavingAccount(ctx context.Context, req *playerPb.GetPlayerSavingAccountReq) (*playerPb.GetPlayerSavingAccountRes, error) {
 	// your code here
 	return nil, nil
 
