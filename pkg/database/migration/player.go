@@ -11,6 +11,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
+	"golang.org/x/crypto/bcrypt"
 )
 
 func playerDbConn(pctx context.Context, cfg *config.Config) *mongo.Database {
@@ -38,64 +39,70 @@ func PlayerMigrate(pctx context.Context, cfg *config.Config) {
 	})
 
 	log.Println(indexs)
+
 	documents := func() []any {
 		roles := []*player.Player{
 			{
 				Email: "player001@go.com",
-				Password: "123456789",
+				Password: func() string {
+					hashedPassword, _ := bcrypt.GenerateFromPassword([]byte("123456"), bcrypt.DefaultCost)
+					return string(hashedPassword)
+				}(),
 				Username: "Player001",
 				PlayerRoles: []player.PlayerRole{
 					{
 						RoleTitle: "player",
-						RoleCode: 0,
+						RoleCode:  0,
 					},
-					
 				},
 				CreatedAt: utils.LocalTime(),
 				UpdatedAt: utils.LocalTime(),
 			},
 			{
 				Email: "player002@go.com",
-				Password: "123456789",
-				Username: "Player002",
+				Password: func() string {
+					hashedPassword, _ := bcrypt.GenerateFromPassword([]byte("123456"), bcrypt.DefaultCost)
+					return string(hashedPassword)
+				}(), Username: "Player002",
 				PlayerRoles: []player.PlayerRole{
 					{
 						RoleTitle: "player",
-						RoleCode: 0,
+						RoleCode:  0,
 					},
-					
 				},
 				CreatedAt: utils.LocalTime(),
 				UpdatedAt: utils.LocalTime(),
 			},
 			{
 				Email: "player003@go.com",
-				Password: "123456789",
-				Username: "Player003",
+				Password: func() string {
+					hashedPassword, _ := bcrypt.GenerateFromPassword([]byte("123456"), bcrypt.DefaultCost)
+					return string(hashedPassword)
+				}(), Username: "Player003",
 				PlayerRoles: []player.PlayerRole{
 					{
 						RoleTitle: "player",
-						RoleCode: 0,
+						RoleCode:  0,
 					},
-					
 				},
 				CreatedAt: utils.LocalTime(),
 				UpdatedAt: utils.LocalTime(),
 			},
 			{
 				Email: "admin001@go.com",
-				Password: "123456789",
-				Username: "Admin001",
+				Password: func() string {
+					hashedPassword, _ := bcrypt.GenerateFromPassword([]byte("123456"), bcrypt.DefaultCost)
+					return string(hashedPassword)
+				}(), Username: "Admin001",
 				PlayerRoles: []player.PlayerRole{
 					{
 						RoleTitle: "player",
-						RoleCode: 0,
+						RoleCode:  0,
 					},
 					{
 						RoleTitle: "admin",
-						RoleCode: 1,
+						RoleCode:  1,
 					},
-					
 				},
 				CreatedAt: utils.LocalTime(),
 				UpdatedAt: utils.LocalTime(),
@@ -113,12 +120,11 @@ func PlayerMigrate(pctx context.Context, cfg *config.Config) {
 	}
 	log.Println("Migrate auth completed: ", results.InsertedIDs)
 
-
 	playerTransactions := make([]any, 0)
-	for _,p := range results.InsertedIDs{
+	for _, p := range results.InsertedIDs {
 		playerTransactions = append(playerTransactions, &player.PlayerTransaction{
-			PlayerId: "player:"+ p.(primitive.ObjectID).Hex(),
-			Amount: 1000,
+			PlayerId:  "player:" + p.(primitive.ObjectID).Hex(),
+			Amount:    1000,
 			CreatedAt: utils.LocalTime(),
 		})
 	}
@@ -130,7 +136,7 @@ func PlayerMigrate(pctx context.Context, cfg *config.Config) {
 	log.Println("Migrate player_transactions completed: ", results.InsertedIDs)
 
 	col = db.Collection("player_transactions_queue")
-	result, err := col.InsertOne(pctx, bson.M{"offset":-1},nil)
+	result, err := col.InsertOne(pctx, bson.M{"offset": -1}, nil)
 	if err != nil {
 		panic(err)
 	}
