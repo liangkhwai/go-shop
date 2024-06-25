@@ -22,10 +22,10 @@ func NewAuthGrpcHandler(authUsecase authUsecase.AuthUsecaseService) *authGrpcHan
 
 func (g *authGrpcHandler) AccessTokenSearch(ctx context.Context, req *authPb.AccessTokenSearchReq) (*authPb.AccessTokenSearchRes, error) {
 	// your code here
-	return nil, nil
+	return g.authUsecase.AccessTokenSearch(ctx, req.AccessToken)
 }
 
 func (g *authGrpcHandler) RolesCount(ctx context.Context, req *authPb.RolesCountReq) (*authPb.RolesCountRes, error) {
 	// your code here
-	return nil, nil
+	return g.authUsecase.RolesCount(ctx)
 }
