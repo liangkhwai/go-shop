@@ -3,6 +3,7 @@ package middlewareUsecase
 import (
 	"errors"
 	"fmt"
+	"log"
 
 	"github.com/labstack/echo/v4"
 	"github.com/liangkhwai/go-shop/config"
@@ -15,6 +16,7 @@ type (
 	MiddlewareUsecaseService interface {
 		JwtAuthorization(c echo.Context, cfg *config.Config, accessToken string) (echo.Context, error)
 		RbacAuthorization(c echo.Context, cfg *config.Config, expected []int) (echo.Context, error)
+		PlayerIdParamValidation(c echo.Context) (echo.Context, error)
 	}
 
 	middlewareUsecase struct {
@@ -64,4 +66,22 @@ func (u *middlewareUsecase) RbacAuthorization(c echo.Context, cfg *config.Config
 	}
 
 	return nil, errors.New("error: permission denied")
+}
+
+func (u *middlewareUsecase) PlayerIdParamValidation(c echo.Context) (echo.Context, error) {
+
+	playerIdReq := c.Param("player_id")
+	playerIdToken := c.Get("player_id").(string)
+
+	if playerIdToken == "" {
+		log.Printf("Error: player_id not found\n")
+		return nil, errors.New("error: player_id is required")
+	}
+
+	if playerIdReq != playerIdToken {
+		log.Printf("Error: player_id not match, playerIdReq: %s, playerIdToken: %s\n", playerIdReq, playerIdToken)
+		return nil, errors.New("error: player_id not match")
+	}
+
+	return c, nil
 }
