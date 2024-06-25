@@ -3,6 +3,7 @@ package authRepository
 import (
 	"context"
 	"errors"
+	"fmt"
 	"log"
 	"time"
 
@@ -23,6 +24,8 @@ type (
 		FindOnePlayerProfileToRefresh(pctx context.Context, grpcUrl string, req *playerPb.FindOnePlayerProfileToRefreshReq) (*playerPb.PlayerProfile, error)
 		UpdateOnePlayerCredential(pctx context.Context, credentialId string, req *auth.UpdateRefreshTokenReq) error
 		DeleteOnePlayerCredential(pctx context.Context, crendentialId string) (int64, error)
+		FindOneAccessToken(pctx context.Context, accessToken string) (*auth.Credential, error)
+		RolesCount(pctx context.Context) (int64, error)
 	}
 
 	authRepository struct {
@@ -158,4 +161,38 @@ func (r *authRepository) DeleteOnePlayerCredential(pctx context.Context, crenden
 	log.Printf("DeleteOnePlayerCredential result: %v", result)
 
 	return result.DeletedCount, nil
+}
+
+func (r *authRepository) FindOneAccessToken(pctx context.Context, accessToken string) (*auth.Credential, error) {
+
+	ctx, cancel := context.WithTimeout(pctx, 10*time.Second)
+	defer cancel()
+
+	db := r.authDbConn(ctx)
+	col := db.Collection("auth")
+
+	credential := new(auth.Credential)
+	if err := col.FindOne(ctx, bson.M{"access_token": accessToken}).Decode(credential); err != nil {
+		log.Printf("Error: FindOneAccessToken failed: %s", err.Error())
+		return nil, errors.New("error: access token not found")
+	}
+
+	return credential, nil
+}
+
+func (r *authRepository) RolesCount(pctx context.Context) (int64, error) {
+	ctx, cancel := context.WithTimeout(pctx, 10*time.Second)
+	defer cancel()
+
+	db := r.authDbConn(ctx)
+	col := db.Collection("roles")
+
+	count, err := col.CountDocuments(ctx, bson.M{})
+	fmt.Printf("RolesCount: %d\n", count)
+	if err != nil {
+		log.Printf("Error: RolesCount failed: %s", err.Error())
+		return -1, errors.New("error: roles count failed")
+	}
+	return count, nil
+
 }

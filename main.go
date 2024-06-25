@@ -13,8 +13,6 @@ import (
 func main() {
 	ctx := context.Background()
 
-	hello := "hi"
-	_= hello
 	// Initialize config
 
 	cfg := config.LoadConfig(func() string {
