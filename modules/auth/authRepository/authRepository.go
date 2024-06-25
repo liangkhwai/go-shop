@@ -10,6 +10,7 @@ import (
 	"github.com/liangkhwai/go-shop/modules/auth"
 	playerPb "github.com/liangkhwai/go-shop/modules/player/playerPb"
 	"github.com/liangkhwai/go-shop/pkg/grpccon"
+	"github.com/liangkhwai/go-shop/pkg/jwtauth"
 	"github.com/liangkhwai/go-shop/pkg/utils"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -48,7 +49,9 @@ func (r *authRepository) CredentialSearch(pctx context.Context, grpcUrl string, 
 	ctx, cancel := context.WithTimeout(pctx, 30*time.Second)
 	defer cancel()
 
+	jwtauth.SetApiKeyInContext(&ctx)
 	conn, err := grpccon.NewGrpcClient(grpcUrl)
+
 	if err != nil {
 		log.Printf("Error: gRPC connection failed: %s", err.Error())
 		return nil, errors.New("error: gRPC connection failed")
@@ -69,7 +72,9 @@ func (r *authRepository) FindOnePlayerProfileToRefresh(pctx context.Context, grp
 	ctx, cancel := context.WithTimeout(pctx, 30*time.Second)
 	defer cancel()
 
+	jwtauth.SetApiKeyInContext(&ctx)
 	conn, err := grpccon.NewGrpcClient(grpcUrl)
+
 	if err != nil {
 		log.Printf("Error: gRPC connection failed: %s", err.Error())
 		return nil, errors.New("error: gRPC connection failed")

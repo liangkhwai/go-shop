@@ -13,7 +13,7 @@ import (
 	"github.com/liangkhwai/go-shop/modules/auth/authRepository"
 	"github.com/liangkhwai/go-shop/modules/player"
 	playerPb "github.com/liangkhwai/go-shop/modules/player/playerPb"
-	jwtauth "github.com/liangkhwai/go-shop/pkg/jwtAuth"
+	"github.com/liangkhwai/go-shop/pkg/jwtauth"
 	"github.com/liangkhwai/go-shop/pkg/utils"
 )
 

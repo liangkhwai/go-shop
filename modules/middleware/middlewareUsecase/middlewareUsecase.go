@@ -8,7 +8,7 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/liangkhwai/go-shop/config"
 	"github.com/liangkhwai/go-shop/modules/middleware/middlewareRepository"
-	jwtauth "github.com/liangkhwai/go-shop/pkg/jwtAuth"
+	 "github.com/liangkhwai/go-shop/pkg/jwtauth"
 	"github.com/liangkhwai/go-shop/pkg/rbac"
 )
 

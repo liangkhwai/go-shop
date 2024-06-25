@@ -125,7 +125,7 @@ func NewApiKey(secret string) AuthFactory {
 		authConcrete: &authConcrete{
 			Secret: []byte(secret),
 			Claims: &AuthMapClaims{
-				Claims: nil,
+				Claims: &Claims{},
 				RegisteredClaims: jwt.RegisteredClaims{
 					Issuer:    "go.shop",
 					Subject:   "api-key",

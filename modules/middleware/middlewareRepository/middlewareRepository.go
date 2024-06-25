@@ -8,6 +8,7 @@ import (
 
 	authPb "github.com/liangkhwai/go-shop/modules/auth/authPb"
 	"github.com/liangkhwai/go-shop/pkg/grpccon"
+	"github.com/liangkhwai/go-shop/pkg/jwtauth"
 )
 
 type (
@@ -29,11 +30,13 @@ func (r *middlewareRepository) AccessTokenSearch(pctx context.Context, grpcUrl, 
 	defer cancel()
 
 	conn, err := grpccon.NewGrpcClient(grpcUrl)
+	
 	if err != nil {
 		log.Printf("Error: gRPC connection failed: %s", err.Error())
 		return errors.New("error: gRPC connection failed")
 	}
-
+	
+	jwtauth.SetApiKeyInContext(&ctx)
 	result, err := conn.Auth().AccessTokenSearch(ctx, &authPb.AccessTokenSearchReq{
 		AccessToken: accessToken,
 	})
@@ -61,11 +64,13 @@ func (r *middlewareRepository) RolesCount(pctx context.Context, grpcUrl string) 
 	defer cancel()
 
 	conn, err := grpccon.NewGrpcClient(grpcUrl)
+	
 	if err != nil {
 		log.Printf("Error: gRPC connection failed: %s", err.Error())
 		return -1, errors.New("error: gRPC connection failed")
 	}
-
+	
+	jwtauth.SetApiKeyInContext(&ctx)
 	result, err := conn.Auth().RolesCount(ctx, &authPb.RolesCountReq{})
 	if err != nil {
 		log.Printf("Error: CredentialSearch failed: %s", err.Error())
