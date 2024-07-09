@@ -100,8 +100,8 @@ func LoadConfig(path string) Config {
 			InventoryUrl: os.Getenv("GRPC_INVENTORY_URL"),
 		},
 		Paginate: Paginate{
-			ItemNextPageBasedUrl: os.Getenv("ITEM_NEXT_PAGE_BASED_URL"),
-			InventoryNextPageBasedUrl: os.Getenv("INVENTORY_NEXT_PAGE_BASED_URL"),
+			ItemNextPageBasedUrl: os.Getenv("PAGINATE_ITEM_NEXT_PAGE_BASED_URL"),
+			InventoryNextPageBasedUrl: os.Getenv("PAGINATE_INVENTORY_NEXT_PAGE_BASED_URL"),
 		},
 		
 	}

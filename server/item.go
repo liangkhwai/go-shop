@@ -3,8 +3,8 @@ package server
 import (
 	"log"
 
-	itemPb "github.com/liangkhwai/go-shop/modules/item/itemPb"
 	"github.com/liangkhwai/go-shop/modules/item/itemHandler"
+	itemPb "github.com/liangkhwai/go-shop/modules/item/itemPb"
 	"github.com/liangkhwai/go-shop/modules/item/itemRepository"
 	"github.com/liangkhwai/go-shop/modules/item/itemUsecase"
 	"github.com/liangkhwai/go-shop/pkg/grpccon"
@@ -22,7 +22,6 @@ func (s *server) itemService() {
 		grpcServer.Serve(lis)
 
 	}()
-	_ = httpHandler
 	_ = grpcHandler
 
 	item := s.app.Group("/item_v1")
@@ -30,4 +29,10 @@ func (s *server) itemService() {
 	//Health Check
 
 	item.GET("", s.healthCheckService)
+
+	item.POST("/item", s.middleware.JwtAuthorization(s.middleware.RbacAuthorization(httpHandler.CreateItem, []int{1, 0})))
+	item.GET("/item/:item_id", httpHandler.FindOneItem)
+	item.GET("/item", httpHandler.FindManyItems)
+	item.PATCH("/item/:item_id", s.middleware.JwtAuthorization(s.middleware.RbacAuthorization(httpHandler.Edititem, []int{1, 0})))
+	item.PATCH("/item/:item_id/is-activated", s.middleware.JwtAuthorization(s.middleware.RbacAuthorization(httpHandler.EnableOrDisableItem, []int{1, 0})))
 }
